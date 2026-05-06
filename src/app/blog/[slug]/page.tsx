@@ -83,7 +83,8 @@ export default async function BlogDetailPage({
         <article className="w-[90%]  mx-auto py-12 text-white">
           <div className="max-w-[860px] mx-auto">
             <Link
-className="p-[1rem] inline-flex mb-3 bg-[var(--lime-dim)] rounded-3xl text-[var(--white)] font-[500] text-[1rem] transition hover:bg-[var(--lime-dk)] hover:text-[var(--black)]"              href={"/blog"}
+              className="p-[1rem] inline-flex mb-3 bg-[var(--lime-dim)] rounded-3xl text-[var(--white)] font-[500] text-[1rem] transition hover:bg-[var(--lime-dk)] hover:text-[var(--black)]"
+              href={"/blog"}
             >
               Back to Blogs
             </Link>
@@ -131,7 +132,9 @@ className="p-[1rem] inline-flex mb-3 bg-[var(--lime-dim)] rounded-3xl text-[var(
 
             <div className="flex gap-1 flex-wrap">
               {blog.tags.length > 0 &&
-                blog.tags.map((tag: any, i) => <span key={i}>{tag}</span>)}
+                blog.tags.map((tag: any, i: number) => (
+                  <span key={i}>{tag}</span>
+                ))}
             </div>
           </div>
         </article>

@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     siteName: "KOLI",
     images: [
       {
-        url: "https://koli.netlify.app/ogimage.png",
+        url: "https://koliapp.netlify.app/ogimage.png",
         width: 1200,
         height: 630,
       },
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "KOLI — Rwanda's Influencer Platform",
     description: "Find & contact Rwanda's top creators.",
-    images: ["https://koli.netlify.app/ogimage.png"],
+    images: ["https://koliapp.netlify.app/ogimage.png"],
   },
   other: {
     "geo.region": "RW-01",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     shortcut: "/favicon.svg",
     apple: "/favicon.svg",
   },
-  metadataBase: new URL("https://koli.netlify.app"),
+  metadataBase: new URL("https://koliapp.netlify.app"),
 };
 
 export default function RootLayout({
@@ -75,7 +75,7 @@ export default function RootLayout({
               "@type": "Organization",
               name: "KOLI",
               description: "Rwanda's #1 influencer discovery platform",
-              url: "https://koli.netlify.app",
+              url: "https://koliapp.netlify.app",
               foundingLocation: { "@type": "Place", name: "Kigali, Rwanda" },
               areaServed: { "@type": "Country", name: "Rwanda" },
             }),
