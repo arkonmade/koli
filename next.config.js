@@ -2,10 +2,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['your-supabase-project.supabase.co'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'skhowaelhwncqgeydnnm.supabase.co' },
+      { protocol: 'https', hostname: '**.supabase.co' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+    ],
   },
-  // Enable static exports for Vercel/Netlify if needed
-  // output: 'export',
 }
-
 module.exports = nextConfig

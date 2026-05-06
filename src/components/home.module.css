@@ -14,7 +14,11 @@
   transform: translateX(-50%);
   width: 600px;
   height: 600px;
-  background: radial-gradient(ellipse, rgba(182, 255, 46, 0.12) 0%, transparent 70%);
+  background: radial-gradient(
+    ellipse,
+    rgba(182, 255, 46, 0.12) 0%,
+    transparent 70%
+  );
   pointer-events: none;
 }
 
@@ -64,50 +68,55 @@
   line-height: 1.6;
 }
 
-.searchBar {
-  max-width: 580px;
-  margin: 0 auto 48px;
-  display: flex;
-  background: var(--surface2);
-  border: 1.5px solid var(--border-strong);
-  border-radius: 999px;
-  padding: 6px;
-  box-shadow: var(--shadow);
-}
+@media (min-width: 450px) {
+  .searchBar {
+    max-width: 580px;
+    margin: 0 auto 48px;
+    display: flex;
+    /* background: var(--surface2); */
+    background: #1c1c22;
+    /* border: 1.5px solid var(--border-strong); */
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+    padding: 6px;
+    /* box-shadow: var(--shadow); */
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.55);
+  }
 
-.searchInput {
-  flex: 1;
-  background: none;
-  border: none;
-  outline: none;
-  color: var(--white);
-  font-family: var(--font-body);
-  font-size: 16px;
-  padding: 10px 16px;
-}
+  .searchInput {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 16px;
+    padding: 10px 16px;
+  }
 
-.searchInput::placeholder {
-  color: var(--gray);
-}
+  .searchInput::placeholder {
+    color: var(--gray);
+  }
 
-.searchBtn {
-  background: var(--lime);
-  border: none;
-  cursor: pointer;
-  color: var(--black);
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 600;
-  padding: 10px 24px;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background 0.15s;
-}
+  .searchBtn {
+    background: var(--lime);
+    border: none;
+    cursor: pointer;
+    color: var(--black);
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 600;
+    padding: 10px 14px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s;
+  }
 
-.searchBtn:hover {
-  background: var(--lime-dark);
+  .searchBtn:hover {
+    background: var(--lime-dark);
+  }
 }
 
 .categories {

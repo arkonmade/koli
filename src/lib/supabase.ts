@@ -1,138 +1,272 @@
 // src/lib/supabase.ts
 import { createClient } from '@supabase/supabase-js'
+import type { Influencer, SocialAccount, InfluencerLink, InfluencerImage, CollaborationRequest, ContactMessage, Profile } from '@/types'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const URL  = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Browser client (singleton)
+export const supabase = createClient(URL, ANON)
 
-// Server-side admin client (uses service role key, never expose to browser)
-export const getAdminClient = () =>
-  createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+// Server-only admin client
+export const adminClient = () =>
+  createClient(URL, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
-// ─── TYPES ───────────────────────────────────────────────────────────────────
-export type Influencer = {
-  id: string
-  name: string
-  slug: string
-  bio: string
-  category: string
-  location: string
-  phone: string
-  instagram: string
-  instagram_followers: number
-  tiktok: string
-  tiktok_followers: number
-  avatar: string
-  color: string
-  tags: string[]
-  content_types: string[]
-  rate_range: string
-  is_featured: boolean
-  is_active: boolean
-  created_at: string
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+export async function signUp(email: string, password: string, fullName: string) {
+  return supabase.auth.signUp({
+    email,
+    password,
+    options: { data: { full_name: fullName, role: 'user' } },
+  })
 }
 
-export type CollaborationRequest = {
-  id: string
-  influencer_id: string
-  brand_name: string
-  contact_name: string
-  contact_email: string
-  message: string
-  status: 'pending' | 'seen' | 'accepted' | 'declined'
-  created_at: string
+export async function signIn(email: string, password: string) {
+  return supabase.auth.signInWithPassword({ email, password })
 }
 
-// ─── DATA HELPERS ─────────────────────────────────────────────────────────────
+export async function signOut() {
+  return supabase.auth.signOut()
+}
+
+export async function getSession() {
+  const { data } = await supabase.auth.getSession()
+  return data.session
+}
+
+export async function getProfile(userId: string): Promise<Profile | null> {
+  const { data } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single()
+  return data as Profile | null
+}
+
+// ─── INFLUENCERS ──────────────────────────────────────────────────────────────
 export async function getInfluencers(filters?: {
   category?: string
   search?: string
-  platform?: string
   featured?: boolean
-}) {
-  let query = supabase
+}): Promise<Influencer[]> {
+  let q = supabase
     .from('influencers')
-    .select('*')
+    .select(`
+      *,
+      socials:influencer_socials(id,platform,handle,followers,sort_order),
+      links:influencer_links(id,link_type,url,label,sort_order),
+      images:influencer_images(id,url,label,sort_order)
+    `)
     .eq('is_active', true)
     .order('is_featured', { ascending: false })
-    .order('instagram_followers', { ascending: false })
+    .order('created_at', { ascending: false })
 
-  if (filters?.featured) {
-    query = query.eq('is_featured', true)
-  }
-
+  if (filters?.featured) q = q.eq('is_featured', true)
   if (filters?.category && filters.category !== 'All') {
-    query = query.or(`category.eq.${filters.category},tags.cs.{${filters.category}}`)
+    q = q.or(`category.eq.${filters.category},tags.cs.{${filters.category}}`)
   }
-
   if (filters?.search) {
     const s = filters.search
-    query = query.or(
-      `name.ilike.%${s}%,bio.ilike.%${s}%,category.ilike.%${s}%`
-    )
+    q = q.or(`name.ilike.%${s}%,bio.ilike.%${s}%,category.ilike.%${s}%`)
   }
 
-  const { data, error } = await query
+  const { data, error } = await q
   if (error) throw error
-  return data as Influencer[]
+
+  // Sort nested arrays
+  return (data as any[]).map(normalise)
 }
 
-export async function getInfluencerBySlug(slug: string) {
+export async function getInfluencerBySlug(slug: string): Promise<Influencer> {
   const { data, error } = await supabase
     .from('influencers')
-    .select('*')
+    .select(`
+      *,
+      socials:influencer_socials(id,platform,handle,followers,sort_order),
+      links:influencer_links(id,link_type,url,label,sort_order),
+      images:influencer_images(id,url,label,sort_order)
+    `)
     .eq('slug', slug)
     .eq('is_active', true)
     .single()
   if (error) throw error
-  return data as Influencer
+  return normalise(data)
 }
 
-export async function submitCollaborationRequest(req: Omit<CollaborationRequest, 'id' | 'status' | 'created_at'>) {
-  const { error } = await supabase
-    .from('collaboration_requests')
-    .insert([req])
-  if (error) throw error
+function normalise(raw: any): Influencer {
+  return {
+    ...raw,
+    socials: (raw.socials || []).sort((a: any, b: any) => a.sort_order - b.sort_order),
+    links:   (raw.links   || []).sort((a: any, b: any) => a.sort_order - b.sort_order),
+    images:  (raw.images  || []).sort((a: any, b: any) => a.sort_order - b.sort_order),
+  }
 }
 
-export async function getAllInfluencersAdmin() {
-  const admin = getAdminClient()
-  const { data, error } = await admin
+// ─── ADMIN — INFLUENCERS ──────────────────────────────────────────────────────
+export async function adminGetInfluencers(): Promise<Influencer[]> {
+  const { data, error } = await adminClient()
     .from('influencers')
-    .select('*')
+    .select(`
+      *,
+      socials:influencer_socials(id,platform,handle,followers,sort_order),
+      links:influencer_links(id,link_type,url,label,sort_order),
+      images:influencer_images(id,url,label,sort_order)
+    `)
     .order('created_at', { ascending: false })
   if (error) throw error
-  return data as Influencer[]
+  return (data as any[]).map(normalise)
 }
 
-export async function upsertInfluencer(inf: Partial<Influencer>) {
-  const admin = getAdminClient()
-  const { data, error } = await admin
-    .from('influencers')
-    .upsert([inf])
-    .select()
+export async function adminUpsertInfluencer(
+  inf: Partial<Influencer> & { socials?: Partial<SocialAccount>[]; links?: Partial<InfluencerLink>[]; images?: Partial<InfluencerImage>[] }
+) {
+  const db = adminClient()
+  const { socials, links, images, ...core } = inf
+
+  // Upsert core
+  const { data, error } = await db.from('influencers').upsert([core]).select().single()
   if (error) throw error
+  const id = (data as any).id
+
+  // Replace socials
+  if (socials !== undefined) {
+    await db.from('influencer_socials').delete().eq('influencer_id', id)
+    if (socials.length > 0) {
+      await db.from('influencer_socials').insert(
+        socials.filter(s => s.handle).map((s, i) => ({ ...s, influencer_id: id, sort_order: i }))
+      )
+    }
+  }
+
+  // Replace links
+  if (links !== undefined) {
+    await db.from('influencer_links').delete().eq('influencer_id', id)
+    if (links.length > 0) {
+      await db.from('influencer_links').insert(
+        links.filter(l => l.url).map((l, i) => ({ ...l, influencer_id: id, sort_order: i }))
+      )
+    }
+  }
+
+  // Replace images
+  if (images !== undefined) {
+    await db.from('influencer_images').delete().eq('influencer_id', id)
+    if (images.length > 0) {
+      await db.from('influencer_images').insert(
+        images.filter(img => img.url).map((img, i) => ({ ...img, influencer_id: id, sort_order: i }))
+      )
+    }
+  }
+
   return data
 }
 
-export async function deleteInfluencer(id: string) {
-  const admin = getAdminClient()
-  const { error } = await admin
-    .from('influencers')
-    .delete()
-    .eq('id', id)
+export async function adminDeleteInfluencer(id: string) {
+  const { error } = await adminClient().from('influencers').delete().eq('id', id)
   if (error) throw error
 }
 
-export async function toggleFeatured(id: string, featured: boolean) {
-  const admin = getAdminClient()
-  const { error } = await admin
+export async function adminToggleFeatured(id: string, featured: boolean) {
+  const { error } = await adminClient()
     .from('influencers')
     .update({ is_featured: featured })
     .eq('id', id)
   if (error) throw error
+}
+
+// ─── COLLABORATION REQUESTS ───────────────────────────────────────────────────
+export async function submitCollabRequest(payload: {
+  influencer_id: string
+  user_id: string
+  brand_name: string
+  contact_name: string
+  contact_email: string
+  message: string
+}) {
+  const { error } = await supabase.from('collaboration_requests').insert([payload])
+  if (error) throw error
+}
+
+export async function adminGetRequests(): Promise<CollaborationRequest[]> {
+  const { data, error } = await adminClient()
+    .from('collaboration_requests')
+    .select('*, influencer:influencers(name,slug,category)')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data as CollaborationRequest[]
+}
+
+export async function adminUpdateRequestStatus(id: string, status: string) {
+  const { error } = await adminClient()
+    .from('collaboration_requests')
+    .update({ status })
+    .eq('id', id)
+  if (error) throw error
+}
+
+// ─── CONTACT MESSAGES ─────────────────────────────────────────────────────────
+export async function submitContactMessage(payload: {
+  user_id: string
+  sender_name: string
+  sender_email: string
+  sender_phone: string
+  preferred_contact: string
+  social_handle: string
+  subject: string
+  message: string
+  type: string
+}) {
+  const { error } = await supabase.from('contact_messages').insert([payload])
+  if (error) throw error
+}
+
+export async function adminGetMessages(): Promise<ContactMessage[]> {
+  const { data, error } = await adminClient()
+    .from('contact_messages')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data as ContactMessage[]
+}
+
+export async function adminUpdateMessageStatus(id: string, status: string) {
+  const { error } = await adminClient()
+    .from('contact_messages')
+    .update({ status })
+    .eq('id', id)
+  if (error) throw error
+}
+
+// ─── ADMIN — ALL PROFILES ─────────────────────────────────────────────────────
+export async function adminGetProfiles(): Promise<Profile[]> {
+  const { data, error } = await adminClient()
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data as Profile[]
+}
+
+
+// ________ BLOGS ______________
+
+export async function getBlogs() {
+  const { data, error } = await supabase
+    .from('blogs')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data
+}
+
+export async function getBlogBySlug(slug: string) {
+  const { data, error } = await supabase
+    .from('blogs')
+    .select('*')
+    .eq('slug', slug)
+    .single()
+
+  if (error) throw error
+  return data
 }
