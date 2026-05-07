@@ -247,7 +247,15 @@ export async function adminGetProfiles(): Promise<Profile[]> {
   return data as Profile[]
 }
 
-
+type Blog = {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  cover_image: string;
+  created_at: string;
+  featured: boolean;
+};
 // ________ BLOGS ______________
 
 export async function getBlogs() {

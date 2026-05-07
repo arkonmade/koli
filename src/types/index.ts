@@ -44,17 +44,24 @@ export type Influencer = {
   bio: string
   category: string
   location: string
-  phone: string        // gated: auth only
-  email: string        // gated: auth only
+  phone: string
+  email: string
   avatar: string
   color: string
   tags: string[]
   content_types: string[]
-  rate_range: string   // gated: auth only
+  rate_range: string
   is_featured: boolean
   is_active: boolean
   created_at: string
-  // joined relations
+
+  // ✅ ADD THESE (this is what fixes EVERYTHING)
+  instagram?: string
+  instagram_followers?: number
+  tiktok?: string
+  tiktok_followers?: number
+
+  // optional relations (keep if you use them)
   socials?: SocialAccount[]
   links?: InfluencerLink[]
   images?: InfluencerImage[]

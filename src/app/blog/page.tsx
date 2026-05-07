@@ -3,10 +3,19 @@ import Nav from "@/components/Nav";
 import { getBlogs } from "@/lib/supabase";
 import Link from "next/link";
 
-const FeaturedBlogCard = ({ blog }) => {
+type Blog = {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  cover_image: string;
+  created_at: string;
+  featured: boolean;
+};
+
+const FeaturedBlogCard = ({ blog }: { blog: Blog }) => {
   return (
     <div className="flex flex-col md:flex-row gap-4 p-4 rounded-xl bg-[#0b0b0f] hover:bg-[#111117] transition border border-[#1c1c22]">
-      {/* image */}
       <div className="md:w-2/5 w-full">
         <img
           src={blog.cover_image}
@@ -40,7 +49,7 @@ const FeaturedBlogCard = ({ blog }) => {
     </div>
   );
 };
-const BlogCard = ({ blog }) => {
+const BlogCard = ({ blog }: { blog: Blog }) => {
   return (
     <Link
       href={`/blog/${blog.slug}`}
@@ -69,7 +78,7 @@ const BlogCard = ({ blog }) => {
 };
 
 export default async function BlogPage() {
-  const blogs = await getBlogs();
+  const blogs: Blog[] = await getBlogs();
 
   const featuredBlogs = blogs.filter((b) => b.featured);
   const allBlogs = blogs.filter((b) => !b.featured);

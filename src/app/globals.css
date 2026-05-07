@@ -28,7 +28,7 @@
   --tab-h: 64px;
   --nav-h: 64px;
   --safe: env(safe-area-inset-bottom, 0px);
-  --font-display: var(--font-sora), "Sora", sans-serif;;
+  --font-display: var(--font-sora), "Sora", sans-serif;
   --font-body: var(--font-dm), "DM Sans", sans-serif;
   --font-geist: var(--font-geist), "Geist", sans-serif;
 }
@@ -61,6 +61,10 @@ input,
 textarea,
 select {
   font-family: var(--font-body);
+}
+img {
+  pointer-events: none;
+  opacity: 0.9;
 }
 
 /* ── MOBILE APP SHELL (≤450px) ── */
@@ -571,6 +575,7 @@ select {
   line-height: 1.5;
   margin-bottom: 10px;
   flex: 1;
+  line-clamp: 2;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -970,6 +975,7 @@ textarea.fi {
 }
 select.fi {
   cursor: pointer;
+  appearance: none;
   -webkit-appearance: none;
 }
 .fl {
