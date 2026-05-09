@@ -104,7 +104,7 @@ function normalise(raw: any): Influencer {
 
 // ─── ADMIN — INFLUENCERS ──────────────────────────────────────────────────────
 export async function adminGetInfluencers(): Promise<Influencer[]> {
-  const { data, error } = await adminClient()
+  const { data, error } = await supabase
     .from('influencers')
     .select(`
       *,
@@ -120,7 +120,7 @@ export async function adminGetInfluencers(): Promise<Influencer[]> {
 export async function adminUpsertInfluencer(
   inf: Partial<Influencer> & { socials?: Partial<SocialAccount>[]; links?: Partial<InfluencerLink>[]; images?: Partial<InfluencerImage>[] }
 ) {
-  const db = adminClient()
+  const db = supabase
   const { socials, links, images, ...core } = inf
 
   // Upsert core
@@ -162,12 +162,12 @@ export async function adminUpsertInfluencer(
 }
 
 export async function adminDeleteInfluencer(id: string) {
-  const { error } = await adminClient().from('influencers').delete().eq('id', id)
+  const { error } = await supabase.from('influencers').delete().eq('id', id)
   if (error) throw error
 }
 
 export async function adminToggleFeatured(id: string, featured: boolean) {
-  const { error } = await adminClient()
+  const { error } = await supabase
     .from('influencers')
     .update({ is_featured: featured })
     .eq('id', id)
@@ -188,7 +188,7 @@ export async function submitCollabRequest(payload: {
 }
 
 export async function adminGetRequests(): Promise<CollaborationRequest[]> {
-  const { data, error } = await adminClient()
+  const { data, error } = await supabase
     .from('collaboration_requests')
     .select('*, influencer:influencers(name,slug,category)')
     .order('created_at', { ascending: false })
@@ -197,7 +197,7 @@ export async function adminGetRequests(): Promise<CollaborationRequest[]> {
 }
 
 export async function adminUpdateRequestStatus(id: string, status: string) {
-  const { error } = await adminClient()
+  const { error } = await supabase
     .from('collaboration_requests')
     .update({ status })
     .eq('id', id)
@@ -221,7 +221,7 @@ export async function submitContactMessage(payload: {
 }
 
 export async function adminGetMessages(): Promise<ContactMessage[]> {
-  const { data, error } = await adminClient()
+  const { data, error } = await supabase
     .from('contact_messages')
     .select('*')
     .order('created_at', { ascending: false })
@@ -230,7 +230,7 @@ export async function adminGetMessages(): Promise<ContactMessage[]> {
 }
 
 export async function adminUpdateMessageStatus(id: string, status: string) {
-  const { error } = await adminClient()
+  const { error } = await supabase
     .from('contact_messages')
     .update({ status })
     .eq('id', id)
@@ -239,7 +239,7 @@ export async function adminUpdateMessageStatus(id: string, status: string) {
 
 // ─── ADMIN — ALL PROFILES ─────────────────────────────────────────────────────
 export async function adminGetProfiles(): Promise<Profile[]> {
-  const { data, error } = await adminClient()
+  const { data, error } = await supabase
     .from('profiles')
     .select('*')
     .order('created_at', { ascending: false })

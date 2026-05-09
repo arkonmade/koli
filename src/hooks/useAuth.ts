@@ -29,6 +29,8 @@ export function useAuthProvider(): AuthCtx {
 
   const loadProfile = async (uid: string) => {
     const p = await getProfile(uid)
+    // console.log("PROFILE:", p)
+    // console.log(await supabase.auth.getSession())
     setProfile(p)
   }
 
@@ -36,20 +38,50 @@ export function useAuthProvider(): AuthCtx {
     if (session?.user) loadProfile(session.user.id)
   }
 
+  // useEffect(() => {
+  //   supabase.auth.getSession().then(({ data }) => {
+  //     setSession(data.session)
+  //     if (data.session?.user) loadProfile(data.session.user.id)
+  //     setLoading(false)
+  //   })
+
+  //   const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+  //     setSession(s)
+  //     if (s?.user) loadProfile(s.user.id)
+  //     else setProfile(null)
+  //   })
+  //   return () => subscription.unsubscribe()
+  // }, [])
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session)
-      if (data.session?.user) loadProfile(data.session.user.id)
-      setLoading(false)
+  const init = async () => {
+    const { data } = await supabase.auth.getSession()
+    const session = data.session
+
+    setSession(session)
+
+    if (session?.user?.id) {
+      await loadProfile(session.user.id)
+    }
+
+    setLoading(false)
+  }
+
+  init()
+
+  const { data: { subscription } } =
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+
+      if (session?.user?.id) {
+        loadProfile(session.user.id)
+      } else {
+        setProfile(null)
+      }
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s)
-      if (s?.user) loadProfile(s.user.id)
-      else setProfile(null)
-    })
-    return () => subscription.unsubscribe()
-  }, [])
+  return () => subscription.unsubscribe()
+}, [])
 
   return {
     session,
