@@ -13,27 +13,37 @@ import {
   adminGetMessages,
   adminUpdateMessageStatus,
   adminGetProfiles,
+  adminGetBlogs,
+  adminGetBlogBySlug,
+  adminUpsertBlog,
+  adminDeleteBlog,
+  adminToggleBlogFeatured,
+  adminToggleBlogPublished,
 } from "@/lib/supabase";
 import { fmtFollowers, totalReach } from "@/lib/platforms";
-import type {
-  Influencer,
-  CollaborationRequest,
-  ContactMessage,
-  Profile,
+import {
+  type Influencer,
+  type CollaborationRequest,
+  type ContactMessage,
+  type Profile,
+  Blog,
 } from "@/types";
 import AdminForm from "@/components/AdminForm";
 import Toast from "@/components/Toast";
 import Nav from "@/components/Nav";
 import MobileShell from "@/components/MobileShell";
+import BlogForm from "@/components/BlogForm";
 
 // ─── REQUEST TABLE ────────────────────────────────────────────────────────────
 function RequestsTab() {
   const [requests, setRequests] = useState<CollaborationRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     adminGetRequests()
       .then(setRequests)
+      .catch(() => setError("Failed to load requests"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -155,10 +165,12 @@ function MessagesTab() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     adminGetMessages()
       .then(setMessages)
+      .catch(() => setError("Failed to load messages"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -422,10 +434,12 @@ function MessagesTab() {
 function UsersTab() {
   const [users, setUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     adminGetProfiles()
       .then(setUsers)
+      .catch(() => setError("Failed to load users"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -505,17 +519,22 @@ function CreatorsTab() {
   const [editing, setEditing] = useState<Influencer | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [delConfirm, setDelConfirm] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     adminGetInfluencers()
       .then(setInfluencers)
+      .catch(() => setError("Failed to load influencers"))
       .finally(() => setLoading(false));
   }, []);
 
-  const fire = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3200);
-  };
+  useEffect(() => {
+    if (!toast) return;
+
+    const t = setTimeout(() => setToast(null), 3200);
+    return () => clearTimeout(t);
+  }, [toast]);
+  const fire = (msg: string) => setToast(msg);
 
   const handleSave = async (data: any) => {
     try {
@@ -699,7 +718,7 @@ function CreatorsTab() {
                 style={{
                   background: "none",
                   border: "1px solid #F87171",
-                  color: "#F87171",
+                  color: "#F4843A",
                   padding: "5px 9px",
                   borderRadius: "var(--r-xs)",
                   cursor: "pointer",
@@ -745,12 +764,281 @@ function CreatorsTab() {
   );
 }
 
+// ___________ BLOGS TAB _________________________________________________________
+function BlogsTab() {
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [showForm, setShowForm] = useState(false);
+
+  const [editing, setEditing] = useState<Blog | null>(null);
+
+  const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    adminGetBlogs()
+      .then(setBlogs)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const refresh = async () => {
+    const fresh = await adminGetBlogs();
+
+    setBlogs(fresh);
+  };
+
+  const fire = (msg: string) => {
+    setToast(msg);
+
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleSave = async (data: Partial<Blog>) => {
+    try {
+      await adminUpsertBlog(data);
+
+      await refresh();
+
+      fire(editing ? "Blog updated ✓" : "Blog created 🎉");
+    } catch {
+      fire("Failed to save blog");
+    }
+
+    setShowForm(false);
+
+    setEditing(null);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await adminDeleteBlog(id);
+
+      setBlogs((p) => p.filter((b) => b.id !== id));
+
+      fire("Blog deleted");
+    } catch {
+      fire("Delete failed");
+    }
+  };
+
+  const toggleFeatured = async (blog: Blog) => {
+    try {
+      await adminToggleBlogFeatured(blog.id, !blog.featured);
+
+      await refresh();
+    } catch {
+      fire("Update failed");
+    }
+  };
+
+  const togglePublished = async (blog: Blog) => {
+    try {
+      await adminToggleBlogPublished(blog.id, !blog.is_published);
+
+      await refresh();
+    } catch {
+      fire("Update failed");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          padding: 20,
+          color: "var(--gray)",
+        }}
+      >
+        Loading blogs...
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <button
+        onClick={() => {
+          setEditing(null);
+
+          setShowForm(true);
+        }}
+        style={{
+          width: "100%",
+          background: "var(--lime)",
+          border: "none",
+          color: "black",
+          padding: "12px",
+          borderRadius: 12,
+          fontWeight: 700,
+          marginBottom: 18,
+          cursor: "pointer",
+        }}
+      >
+        + Add Blog
+      </button>
+
+      {blogs.length === 0 ? (
+        <div
+          style={{
+            color: "var(--gray)",
+            textAlign: "center",
+            padding: "40px 20px",
+          }}
+        >
+          No blogs yet.
+        </div>
+      ) : (
+        blogs.map((blog) => (
+          <div key={blog.id} className="admin-row">
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  fontWeight: 700,
+                  marginBottom: 4,
+                }}
+              >
+                {blog.featured && (
+                  <span
+                    style={{
+                      color: "var(--lime)",
+                    }}
+                  >
+                    ★
+                  </span>
+                )}{" "}
+                {blog.title}
+              </div>
+
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "var(--gray)",
+                }}
+              >
+                /{blog.slug}
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  marginTop: 6,
+                  flexWrap: "wrap",
+                }}
+              >
+                <span
+                  className={`badge ${
+                    blog.is_published ? "badge-accepted" : "badge-pending"
+                  }`}
+                >
+                  {blog.is_published ? "Published" : "Draft"}
+                </span>
+
+                {blog.tags?.map((tag) => (
+                  <span
+                    key={tag}
+                    style={{
+                      fontSize: 10,
+                      background: "var(--s2)",
+                      padding: "3px 8px",
+                      borderRadius: 100,
+                    }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: 6,
+                flexWrap: "wrap",
+              }}
+            >
+              <button onClick={() => toggleFeatured(blog)}>
+                {blog.featured ? "★" : "☆"}
+              </button>
+
+              <button
+                onClick={() => togglePublished(blog)}
+                style={{
+                  background: "none",
+                  border: "1px solid var(--lime-dim)",
+                  padding: "5px 9px",
+                  borderRadius: "var(--r-xs)",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  fontFamily: "var(--font-body)",
+                }}
+                className="text-[#F4843A] hover:text-[var(--lime-dk)] transition "
+              >
+                {blog.is_published ? "Unpublish" : "Publish"}
+              </button>
+
+              <button
+                onClick={() => {
+                  setEditing(blog);
+                  setShowForm(true);
+                }}
+                style={{
+                  background: "none",
+                  border: "1px solid var(--border)",
+                  padding: "5px 9px",
+                  borderRadius: "var(--r-xs)",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  fontFamily: "var(--font-body)",
+                }}
+                className="text-[var(--gray)] hover:text-[var(--lime-dk)] transition "
+              >
+                Edit
+              </button>
+
+              <button
+                style={{
+                  background: "none",
+                  border: "1px solid var(--border)",
+                  padding: "5px 9px",
+                  borderRadius: "var(--r-xs)",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  fontFamily: "var(--font-body)",
+                }}
+                className="text-[var(--lime-dim)] hover:text-[var(--lime-dk)] transition "
+                onClick={() => handleDelete(blog.id)}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))
+      )}
+
+      {showForm && (
+        <BlogForm
+          initial={editing}
+          onSave={handleSave}
+          onCancel={() => {
+            setShowForm(false);
+
+            setEditing(null);
+          }}
+        />
+      )}
+
+      {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
+    </div>
+  );
+}
+
 // ─── ADMIN PAGE ────────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const { isAdmin, loading } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState<
-    "creators" | "requests" | "messages" | "users"
+    "creators" | "requests" | "messages" | "users" | "blogs"
   >("creators");
 
   useEffect(() => {
@@ -783,6 +1071,7 @@ export default function AdminPage() {
     { id: "requests", label: "Requests" },
     { id: "messages", label: "Messages" },
     { id: "users", label: "Users" },
+    { id: "blogs", label: "Blogs" },
   ] as const;
 
   return (
@@ -822,6 +1111,7 @@ export default function AdminPage() {
           {tab === "requests" && <RequestsTab />}
           {tab === "messages" && <MessagesTab />}
           {tab === "users" && <UsersTab />}
+          {tab === "blogs" && <BlogsTab />}
         </div>
       </MobileShell>
     </>

@@ -26,6 +26,7 @@ export default function Nav() {
   const links = [
     { href: "/", label: "Home" },
     { href: "/browse", label: "Browse" },
+    {href: "/blog", label:"Articles"},
     // ...(isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
     ...(user
       ? [

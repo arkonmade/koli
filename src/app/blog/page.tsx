@@ -1,6 +1,8 @@
+// app/blog/page.tsx
+
 import MobileShell from "@/components/MobileShell";
 import Nav from "@/components/Nav";
-import { getBlogs } from "@/lib/supabase";
+import { adminGetBlogs } from "@/lib/supabase";
 import Link from "next/link";
 
 type Blog = {
@@ -44,7 +46,9 @@ const FeaturedBlogCard = ({ blog }: { blog: Blog }) => {
         </Link>
         <p className="text-sm text-[#a1a1aa] line-clamp-3">{blog.excerpt}</p>
 
-        <p className="text-xs text-[#777]">By Author</p>
+        <p className="text-xs text-[var(--gray-mid)]">
+          Author: <span className="text-[#4F73B7] ">arkonmade</span>
+        </p>
       </div>
     </div>
   );
@@ -72,43 +76,211 @@ const BlogCard = ({ blog }: { blog: Blog }) => {
         <h3 className="font-semibold text-white">{blog.title}</h3>
 
         <p className="text-sm text-[#a1a1aa] line-clamp-2">{blog.excerpt}</p>
+        <p className="text-xs text-[var(--gray-mid)]">
+          Author: <span className="text-[#4F73B7] ">arkonmade</span>
+        </p>
       </div>
     </Link>
   );
 };
 
 export default async function BlogPage() {
-  const blogs: Blog[] = await getBlogs();
+  const blogs: Blog[] = await adminGetBlogs();
 
   const featuredBlogs = blogs.filter((b) => b.featured);
   const allBlogs = blogs.filter((b) => !b.featured);
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Organization",
+                "@id": "https://arkonmade.netlify.app/#organization",
+
+                name: "arkon",
+
+                alternateName: [
+                  "arkonmade",
+                  "Arkos Studio",
+                  "Arkon Rwanda",
+                  "Arkon Musanze",
+                  "Arkon Academy",
+                  "Arkon Software",
+                ],
+
+                url: "https://arkonmade.netlify.app",
+
+                logo: {
+                  "@type": "ImageObject",
+                  url: "https://i.pinimg.com/280x280_RS/48/ce/65/48ce65ecdb18b6df36ffbd0eadbffe0a.jpg",
+                },
+
+                sameAs: [
+                  "https://github.com/arkonmade",
+                  "https://www.pinterest.com/arkonmade",
+                  "https://www.behance.net/arkonmade",
+                  "https://www.dribbble.com/arkonmade",
+                  "https://linkedin.com/company/arkonmade",
+                  "https://instagram.com/arkonmade",
+                  "https://maps.app.goo.gl/sFPiyTp5WLExSSen6"
+                ],
+
+                description:
+                  "Arkon is a frontier AI product studio building modern digital products, AI-powered platforms, software systems, and digital experiences.",
+
+                foundingLocation: {
+                  "@type": "Place",
+                  name: "Musanze, Rwanda",
+                },
+
+                areaServed: {
+                  "@type": "Country",
+                  name: "Rwanda",
+                },
+
+                knowsAbout: [
+                  "Artificial Intelligence",
+                  "Software Engineering",
+                  "Product Design",
+                  "Web Applications",
+                  "Influencer Technology",
+                  "Analytics Platforms",
+                  "Startup Technology",
+                ],
+
+                keywords: [
+                  "arkonmade",
+                  "arkos studio",
+                  "arkon rwanda",
+                  "arkon musanze",
+                  "arkon academy",
+                  "arkon software",
+                ],
+              },
+
+              {
+                "@type": "SoftwareApplication",
+                "@id": "https://koliapp.netlify.app/#koli",
+
+                name: "Koli",
+
+                applicationCategory: "BusinessApplication",
+
+                operatingSystem: "Web",
+
+                url: "https://koliapp.netlify.app",
+
+                logo: {
+                  "@type": "ImageObject",
+                  url: "https://koliapp.netlify.app/favicon.svg",
+                },
+
+                creator: {
+                  "@id": "https://arkonmade.netlify.app/#organization",
+                },
+
+                publisher: {
+                  "@id": "https://arkonmade.netlify.app/#organization",
+                },
+
+                description:
+                  "Koli is an influencer intelligence and analytics platform helping brands and businesses discover, evaluate, and connect with top Rwandan influencers using creator metrics, audience insights, and campaign intelligence.",
+
+                areaServed: {
+                  "@type": "Country",
+                  name: "Rwanda",
+                },
+
+                audience: {
+                  "@type": "Audience",
+                  audienceType: [
+                    "Brands",
+                    "Businesses",
+                    "Marketing Teams",
+                    "Agencies",
+                  ],
+                },
+
+                featureList: [
+                  "Influencer Discovery",
+                  "Audience Analytics",
+                  "Creator Metrics",
+                  "Campaign Intelligence",
+                  "Brand Matching",
+                  "Influencer Insights",
+                ],
+
+                knowsAbout: [
+                  "Influencer Marketing",
+                  "Creator Economy",
+                  "Social Media Analytics",
+                  "Campaign Strategy",
+                ],
+              },
+
+              {
+                "@type": "Blog",
+                "@id": "https://koliapp.netlify.app/blog/#blog",
+
+                name: "Koli Insights",
+
+                url: "https://koliapp.netlify.app/blog",
+
+                description:
+                  "Insights, analytics, and strategies around influencer partnerships, creator marketing, social media campaigns, influencer analytics, and digital brand growth.",
+
+                publisher: {
+                  "@id": "https://koliapp.netlify.app/#koli",
+                },
+
+                author: {
+                  "@id": "https://arkonmade.netlify.app/#organization",
+                },
+
+                inLanguage: "en",
+
+                about: [
+                  "Influencer Marketing",
+                  "Creator Analytics",
+                  "Brand Partnerships",
+                  "Social Media Strategy",
+                  "Digital Campaigns",
+                  "Influencer Intelligence",
+                ],
+              },
+            ],
+          }),
+        }}
+      />
+
       <Nav />
 
       <MobileShell>
-        <h1>Blog</h1>
         <section className="relative min-h-[420px] h-full flex items-center justify-center bg-[url('/blog_hero.jpg')] bg-cover bg-center bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-b from-[#060608] via-[#060608de] to-[#060608] pointer-events-none" />
 
           <div className="relative w-[90%]">
             <div className="max-w-[420px] items-center m-auto">
               <div className="flex -space-x-1">
-                <div className="w-[45px] h-[45px] rounded-xl p-2 cursor-pointer transition bg-[#2c2c38] border-[1px] border-[#52525b] hover:bg-[#B6FF2E1F] hover:border-[#a1a1aa] rotate-[5deg]">
+                <div className="w-[45px] h-[45px] rounded-xl p-2 cursor-pointer transition bg-[#2c2c38] border-[1px] border-[#52525b] hover:bg-[var(--s4)] hover:border-[#a1a1aa] rotate-[5deg] hover:rotate-[-5deg]">
                   <img
                     className="w-[28px] h-[28px]"
                     src="https://framerusercontent.com/images/UGOf15HarMoiVLKyFn2iNYEjkb4.png"
                   />
                 </div>
-                <div className="w-[45px] h-[45px] rounded-xl p-2 cursor-pointer transition bg-[#2c2c38] border-[1px] border-[#52525b] hover:bg-[#B6FF2E1F] hover:border-[#a1a1aa] rotate-[-5deg]">
+                <div className="w-[45px] h-[45px] rounded-xl p-2 cursor-pointer transition bg-[#2c2c38] border-[1px] border-[#52525b] hover:bg-[var(--s4)] hover:border-[#a1a1aa] rotate-[-5deg] hover:rotate-[5deg]">
                   <img
                     className="w-[28px] h-[28px]"
                     src="https://framerusercontent.com/images/v7gFR5d5z6MrutqqeIWoho5HNg.png"
                     alt=""
                   />
                 </div>
-                <div className="w-[45px] h-[45px] rounded-xl p-2 cursor-pointer transition bg-[#2c2c38] border-[1px] border-[#52525b] hover:bg-[#B6FF2E1F] hover:border-[#a1a1aa] rotate-[5deg]">
+                <div className="w-[45px] h-[45px] rounded-xl p-2 cursor-pointer transition bg-[#2c2c38] border-[1px] border-[#52525b] hover:bg-[var(--s4)] hover:border-[#a1a1aa] rotate-[5deg] hover:rotate-[-5deg]">
                   <img
                     className="w-[28px] h-[28px]"
                     src="https://framerusercontent.com/images/lYygx5A6nEE09awFrvQv8c7ELnA.png"
@@ -127,9 +299,13 @@ export default async function BlogPage() {
             </div>
             <div className="mt-8 flex flex-col md:flex-row items-center justify-center gap-6">
               <h1></h1>
-              <button className="bg-[#b6ff2e] text-[#060608] px-6 py-3 rounded-full font-semibold hover:bg-[#8fd420] transition">
+              <Link
+                href={"https://chat.whatsapp.com/BE3d0mmh2Kf5PwIxtOXXTC"}
+                target="_blank"
+                className="bg-[#b6ff2e] text-[#060608] px-6 py-3 rounded-full font-semibold hover:bg-[#8fd420] transition"
+              >
                 Join Community
-              </button>
+              </Link>
 
               {/* avatars */}
               <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -179,15 +355,6 @@ export default async function BlogPage() {
             </div>
           </div>
         </section>
-
-        {blogs.map((blog) => (
-          <div key={blog.id}>
-            <Link href={`/blog/${blog.slug}`}>
-              <h2>{blog.title}</h2>
-            </Link>
-            <p>{blog.excerpt}</p>
-          </div>
-        ))}
       </MobileShell>
     </>
   );

@@ -1,4 +1,6 @@
-import { getBlogBySlug, getBlogs } from "@/lib/supabase";
+// app/blog/[slug]/page.tsx
+
+import { adminGetBlogBySlug, adminGetBlogs } from "@/lib/supabase";
 import Nav from "@/components/Nav";
 import MobileShell from "@/components/MobileShell";
 import { notFound } from "next/navigation";
@@ -29,7 +31,7 @@ const socials = [
 // 🔥 SEO: static params for blog indexing
 export async function generateStaticParams() {
   try {
-    const blogs = await getBlogs();
+    const blogs = await adminGetBlogs();
     return blogs.map((b) => ({ slug: b.slug }));
   } catch {
     return [];
@@ -43,7 +45,7 @@ export async function generateMetadata({
   params: { slug: string };
 }): Promise<Metadata> {
   try {
-    const blog = await getBlogBySlug(params.slug);
+    const blog = await adminGetBlogBySlug(params.slug);
 
     return {
       title: `${blog.title} | KOLI Blog`,
@@ -70,13 +72,65 @@ export default async function BlogDetailPage({
   let blog: any;
 
   try {
-    blog = await getBlogBySlug(params.slug);
+    blog = await adminGetBlogBySlug(params.slug);
   } catch {
     notFound();
   }
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+
+            "@type": "Article",
+
+            "@id": `https://koliapp.netlify.app/blog/${blog.slug}#article`,
+
+            headline: blog.title,
+
+            description: blog.excerpt,
+
+            image: [blog.cover_image],
+
+            datePublished: blog.created_at,
+
+            dateModified: blog.created_at,
+
+            inLanguage: "en",
+
+            mainEntityOfPage: {
+              "@type": "WebPage",
+              "@id": `https://koliapp.netlify.app/blog/${blog.slug}`,
+            },
+
+            author: {
+              "@id": "https://arkonmade.netlify.app/#organization",
+            },
+
+            publisher: {
+              "@id": "https://koliapp.netlify.app/#koli",
+            },
+
+            about: [
+              "Influencer Marketing",
+              "Creator Analytics",
+              "Social Media Strategy",
+            ],
+
+            keywords: [
+              "rwanda influencers",
+              "creator analytics",
+              "influencer marketing",
+              "koli",
+              "arkon",
+            ],
+          }),
+        }}
+      />
+
       <Nav />
 
       <MobileShell>

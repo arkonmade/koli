@@ -22,8 +22,8 @@ export default function MobileShell({ children }: { children: React.ReactNode })
     { href: '/',       label: 'Home',    Icon: HomeIcon  },
     { href: '/browse', label: 'Browse',  Icon: BrowseIcon },
     ...(isAdmin ? [{ href: '/admin', label: 'Admin', Icon: AdminIcon }] : []),
-    ...(user ? [{ href: '/contact', label: 'Talk', Icon: ChatIcon }] : []),
-    { href: user ? '/profile' : '/auth/login', label: user ? 'You' : 'Login', Icon: UserIcon },
+    ...(user && !isAdmin ? [{ href: '/contact', label: 'Talk', Icon: ChatIcon }] : []),
+    { href: user ? '/u/in' : '/auth/login', label: user ? 'You' : 'Login', Icon: UserIcon },
   ]
 
   const isActive = (href: string) => {
@@ -47,7 +47,7 @@ export default function MobileShell({ children }: { children: React.ReactNode })
           {user && (
             <button
               onClick={async () => { await signOut(); router.push('/'); router.refresh(); }}
-              style={{ background: 'none', border: 'none', color: 'var(--gray)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+              style={{ background: 'none', border: 'none', color: 'var(--lime-dk)', fontWeight: 500, fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
               Out
             </button>
           )}
