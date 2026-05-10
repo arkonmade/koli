@@ -8,6 +8,8 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { LogOut, User, UserRound } from "lucide";
 
+
+
 export default function Nav() {
   const path = usePathname();
   const router = useRouter();
@@ -130,7 +132,7 @@ export default function Nav() {
                         </div>
                       </div>
                       <>
-                        <button className="flex w-full items-center justify-between rounded-[9px] px-4 py-2 transition active:bg-[var(--gray-dark)] hover:bg-[var(--gray-mid)]">
+                        <Link href={`/u/${profile?.username}`} className="flex w-full items-center justify-between rounded-[9px] px-4 py-2 transition active:bg-[var(--gray-dark)] hover:bg-[var(--gray-mid)]">
                           <div className="flex items-center gap-2">
                             <span>
                               <svg
@@ -151,7 +153,7 @@ export default function Nav() {
                               Profile
                             </span>
                           </div>
-                        </button>
+                        </Link>
                         <Link
                           href={"/admin"}
                           className="flex w-full items-center justify-between rounded-[9px] px-4 py-2 transition active:bg-[var(--gray-dark)] hover:bg-[var(--gray-mid)]"

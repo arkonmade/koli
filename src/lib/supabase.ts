@@ -345,3 +345,38 @@ export async function adminToggleBlogPublished(
     .eq("id", id);
   if (error) throw error;
 }
+
+// _______ USER PROFILES _______________
+export async function getProfileByUsername(username: string) {
+  const res = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("username", username)
+    .maybeSingle();
+
+ console.log("SB RESULTS: ", res)
+
+  return res.data?.[0] ?? null;
+}
+
+export async function updateProfile(id: string, updates: Partial<Profile>) {
+  const { error } = await supabase
+    .from("profiles")
+    .update(updates)
+    .eq("id", id);
+
+  if (error) throw error;
+}
+export async function getBlogsByAuthor(
+  authorId: string,
+) {
+  const { data, error } = await supabase
+    .from("blogs")
+    .select("*")
+    .eq("author_id", authorId)
+    .eq("is_published", true);
+
+  if (error) throw error;
+
+  return data;
+}

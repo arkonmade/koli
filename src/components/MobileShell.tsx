@@ -2,7 +2,7 @@
 // src/components/MobileShell.tsx
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
-import { signOut } from '@/lib/supabase'
+import { signOut, supabase } from '@/lib/supabase'
 
 const HomeIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
 const BrowseIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -13,17 +13,19 @@ const ChatIcon  = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 export default function MobileShell({ children }: { children: React.ReactNode }) {
   const path = usePathname()
   const router = useRouter()
-  const { user, isAdmin, loading } = useAuth()
+  const { user,profile, isAdmin, loading } = useAuth()
 
   const isProfile = path.startsWith('/influencer/')
   const isAuth    = path.startsWith('/auth/')
+  
+  
 
   const tabs = [
     { href: '/',       label: 'Home',    Icon: HomeIcon  },
     { href: '/browse', label: 'Browse',  Icon: BrowseIcon },
     ...(isAdmin ? [{ href: '/admin', label: 'Admin', Icon: AdminIcon }] : []),
     ...(user && !isAdmin ? [{ href: '/contact', label: 'Talk', Icon: ChatIcon }] : []),
-    { href: user ? '/u/in' : '/auth/login', label: user ? 'You' : 'Login', Icon: UserIcon },
+    { href: user ? `/u/${profile?.username}` : '/auth/login', label: user ? 'You' : 'Login', Icon: UserIcon },
   ]
 
   const isActive = (href: string) => {
