@@ -1,5 +1,6 @@
 // app/blog/page.tsx
 
+import Footer from "@/components/Footer";
 import MobileShell from "@/components/MobileShell";
 import Nav from "@/components/Nav";
 import { adminGetBlogs } from "@/lib/supabase";
@@ -127,7 +128,7 @@ export default async function BlogPage() {
                   "https://www.dribbble.com/arkonmade",
                   "https://linkedin.com/company/arkonmade",
                   "https://instagram.com/arkonmade",
-                  "https://maps.app.goo.gl/sFPiyTp5WLExSSen6"
+                  "https://maps.app.goo.gl/sFPiyTp5WLExSSen6",
                 ],
 
                 description:
@@ -356,6 +357,7 @@ export default async function BlogPage() {
           </div>
         </section>
       </MobileShell>
+      <Footer />
     </>
   );
 }

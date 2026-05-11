@@ -6,6 +6,7 @@ import MobileShell from "@/components/MobileShell";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
+import Footer from "@/components/Footer";
 
 export const revalidate = 300;
 
@@ -162,8 +163,8 @@ export default async function BlogDetailPage({
             />
           </div>
 
-          <div className="max-w-[720px] relative mx-auto pl-[9rem]">
-            <div className="flex flex-col absolute -gap-1 top-0 left-0">
+          <div className="max-w-[720px] relative mx-auto pl-0 min-[620px]:pl-[9rem]">
+            <div className="flex flex-col absolute -gap-1 top-0 left-0 max-[620px]:flex-row max-[620px]:top-[-4.7rem] max-[620px]:left-[.3rem] ">
               {socials.map((s, i) => {
                 const rotation =
                   i % 2 === 0 ? "rotate-[5deg]" : "-rotate-[5deg]";
@@ -182,7 +183,28 @@ export default async function BlogDetailPage({
                 );
               })}
             </div>
-            <div className="prose prose-invert max-w-none">{blog.content}</div>
+            <div
+              className="prose prose-invert max-w-none"
+              style={{ whiteSpace: "pre-line" }}
+            >
+              {blog.content
+                .replace(/\\n/g, "\n")
+                .split(/(__.*?__)/g)
+                .map((part:any, index:any) => {
+                  if (part.startsWith("__") && part.endsWith("__")) {
+                    return (
+                      <blockquote
+                        key={index}
+                        className="border-l-4 border-zinc-500 pl-4 italic text-zinc-500 font-[500] my-4"
+                      >
+                        {part.slice(2, -2)}
+                      </blockquote>
+                    );
+                  }
+
+                  return <span key={index}>{part}</span>;
+                })}
+            </div>
 
             <div className="flex gap-1 flex-wrap">
               {blog.tags.length > 0 &&
@@ -192,6 +214,7 @@ export default async function BlogDetailPage({
             </div>
           </div>
         </article>
+        <Footer />
       </MobileShell>
     </>
   );

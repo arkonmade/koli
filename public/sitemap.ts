@@ -1,18 +1,18 @@
-import { getInfluencers, getBlogs } from '@/lib/supabase'
+import { getInfluencers, adminGetBlogs } from "@/lib/supabase";
 
-// sitemap.ts 
+// sitemap.ts
 export default async function sitemap() {
-  const influencers = await getInfluencers()
-  const blogs = await getBlogs()
+  const influencers = await getInfluencers();
+  const blogs = await adminGetBlogs();
 
   return [
     {
-      url: 'https://koli.rw',
+      url: "https://koli.rw",
       lastModified: new Date(),
     },
 
     {
-      url: 'https://koli.rw/browse',
+      url: "https://koli.rw/browse",
       lastModified: new Date(),
     },
 
@@ -25,5 +25,5 @@ export default async function sitemap() {
       url: `https://koli.rw/blog/${blog.slug}`,
       lastModified: new Date(),
     })),
-  ]
+  ];
 }

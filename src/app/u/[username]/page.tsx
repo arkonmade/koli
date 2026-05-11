@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import Nav, { ProfCard } from "@/components/Nav";
+import Nav from "@/components/Nav";
 import MobileShell from "@/components/MobileShell";
 import { useAuth } from "@/hooks/useAuth";
 import { getProfileByUsername } from "@/lib/supabase";

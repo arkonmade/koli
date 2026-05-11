@@ -1,8 +1,8 @@
-import { getInfluencers, getBlogs } from '@/lib/supabase'
+import { getInfluencers, adminGetBlogs } from '@/lib/supabase'
 
 export default async function sitemap() {
   const influencers = await getInfluencers()
-  const blogs = await getBlogs()
+  const blogs = await adminGetBlogs()
 
   return [
     {
