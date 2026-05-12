@@ -45,13 +45,13 @@ export async function generateMetadata({
       ],
 
       alternates: {
-        canonical: `https://koli.rw/influencer/${inf.slug}`,
+        canonical: `https://koli.netlify.app/influencer/${inf.slug}`,
       },
 
       openGraph: {
         title,
         description,
-        url: `https://koli.rw/influencer/${inf.slug}`,
+        url: `https://koli.netlify.app/influencer/${inf.slug}`,
         siteName: 'KOLI',
         locale: 'en_RW',
         type: 'profile',
@@ -110,7 +110,7 @@ export default async function ProfilePage({
               addressLocality: inf.location || "Kigali",
               addressCountry: "Rwanda",
             },
-            url: `https://koli.rw/influencer/${inf.slug}`,
+            url: `https://koli.netlify.app/influencer/${inf.slug}`,
             sameAs: (inf.socials || []).map((s: any) => {
               if (s.platform === 'instagram') return `https://instagram.com/${s.handle}`
               if (s.platform === 'tiktok') return `https://tiktok.com/@${s.handle}`

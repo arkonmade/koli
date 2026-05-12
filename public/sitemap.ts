@@ -7,22 +7,22 @@ export default async function sitemap() {
 
   return [
     {
-      url: "https://koli.rw",
+      url: "https://koli.netlify.app",
       lastModified: new Date(),
     },
 
     {
-      url: "https://koli.rw/browse",
+      url: "https://koli.netlify.app/browse",
       lastModified: new Date(),
     },
 
     ...influencers.map((inf) => ({
-      url: `https://koli.rw/influencer/${inf.slug}`,
+      url: `https://koli.netlify.app/influencer/${inf.slug}`,
       lastModified: new Date(),
     })),
 
     ...blogs.map((blog) => ({
-      url: `https://koli.rw/blog/${blog.slug}`,
+      url: `https://koli.netlify.app/blog/${blog.slug}`,
       lastModified: new Date(),
     })),
   ];
