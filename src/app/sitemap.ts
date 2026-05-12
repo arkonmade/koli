@@ -6,21 +6,21 @@ export default async function sitemap() {
 
   return [
     {
-      url: 'https://koli.netlify.app',
+      url: 'https://koliapp.netlify.app',
       lastModified: new Date(),
     },
     {
-      url: 'https://koli.netlify.app/browse',
+      url: 'https://koliapp.netlify.app/browse',
       lastModified: new Date(),
     },
 
     ...influencers.map((inf) => ({
-      url: `https://koli.netlify.app/influencer/${inf.slug}`,
+      url: `https://koliapp.netlify.app/influencer/${inf.slug}`,
       lastModified: new Date(),
     })),
 
     ...blogs.map((blog) => ({
-      url: `https://koli.netlify.app/blog/${blog.slug}`,
+      url: `https://koliapp.netlify.app/blog/${blog.slug}`,
       lastModified: new Date(),
     })),
   ]

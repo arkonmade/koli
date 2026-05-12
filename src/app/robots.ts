@@ -4,6 +4,6 @@ export default function robots() {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: 'https://koli.netlify.app/sitemap.xml',
+    sitemap: 'https://koliapp.netlify.app/sitemap.xml',
   }
 }
